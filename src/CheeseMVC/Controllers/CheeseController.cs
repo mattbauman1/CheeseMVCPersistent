@@ -21,14 +21,23 @@ namespace CheeseMVC.Controllers
         public IActionResult Index(int id)
         {
             //List<Cheese> cheeses = context.Cheeses.ToList();
-            if (id > 0)
+            if (id != 0)
             {
-                IList<Cheese> cheeses = context.Cheeses.Where(c => c.Category.ID == id).ToList();
+                IList<Cheese> cheeses = context.Cheeses.Include(c => c.Category).Where(c => c.CategoryID == id).ToList();
+                if (cheeses.Count > 0)
+                {
+                    ViewBag.Title = "Cheese Category: " + cheeses[0].Category.Name;
+                }
+                else
+                {
+                    ViewBag.Title = "No Cheeses in the " +  context.Categories.Where(c => c.ID == id).ToList()[0].Name + " Category!";
+                }
                 return View(cheeses);
             }
             else
             {
                 IList<Cheese> cheeses = context.Cheeses.Include(c => c.Category).ToList();
+                ViewBag.Title = "All Cheeses";
                 return View(cheeses);
             }
         }
@@ -83,5 +92,34 @@ namespace CheeseMVC.Controllers
 
             return Redirect("/");
         }
+
+        /*[HttpGet]
+        public IActionResult Edit(int cheeseId)
+        {
+            EditCheeseViewModel editCheeseViewModel = new EditCheeseViewModel(context.Categories.ToList(), context.Cheeses.Single(c => c.ID == cheeseId));
+            return View(editCheeseViewModel);
+        }
+
+        [HttpPost]
+        public IActionResult Edit(EditCheeseViewModel editCheeseViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                CheeseCategory cheeseCategory = context.Categories.Single(c => c.ID == editCheeseViewModel.CategoryID);
+
+                //context.Cheeses.Update(context.Cheeses.Single(c => c.ID == editCheeseViewModel.TheCheese.ID));
+
+                context.Cheeses.Where(c => c.ID == editCheeseViewModel.TheCheese.ID).First().Name = editCheeseViewModel.Name;
+                context.Cheeses.Where(c => c.ID == editCheeseViewModel.TheCheese.ID).First().Description = editCheeseViewModel.Description;
+                context.Cheeses.Where(c => c.ID == editCheeseViewModel.TheCheese.ID).First().Category = cheeseCategory;
+                //context.Cheeses.Update(context.Cheeses.Where(c => c.ID == editCheeseViewModel.TheCheese.ID).First());
+                context.Entry(context.Cheeses.Where(c => c.ID == editCheeseViewModel.TheCheese.ID).First()).State = EntityState.Modified;
+                context.SaveChanges();
+
+                return Redirect("/Cheese");
+            }
+
+            return View(editCheeseViewModel);
+        }*/
     }
 }
